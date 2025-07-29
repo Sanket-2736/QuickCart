@@ -4,6 +4,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import { useState } from "react";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const AddAddress = () => {
 
@@ -14,11 +17,25 @@ const AddAddress = () => {
         area: '',
         city: '',
         state: '',
-    })
+    });
+
+    const {getToken, router} = useAppContext();
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
-
+        try {
+            const token = await getToken();
+            const {data} = await axios.post("/api/user/add-address", {address}, {headers:{Authorization: `Bearer ${token}`}});
+            if (data.success) {
+                toast.success(data.message);
+                router.push("/cart");
+            } else {
+                toast.error(data.message || "Failed to add address");
+            }
+        } catch (error) {
+            toast.error(error.message || "Failed to add address");
+            console.error("Error adding address:", error);
+        }
     }
 
     return (
